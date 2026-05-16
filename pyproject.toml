@@ -1,6 +1,6 @@
 [project]
 name = "app"
-version = "0.1.0"
+version = "1.0.0"
 description = "Project template for python apps. Change as needed."
 readme = "README.md"
 requires-python = ">=3.14"
@@ -75,7 +75,7 @@ exclude = [
 
 [tool.bumpversion]
 commit = false
-current_version = "0.1.0"
+current_version = "1.0.0"
 tag = false
 allow-dirty = false
 
