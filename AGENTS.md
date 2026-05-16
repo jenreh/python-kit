@@ -1,4 +1,4 @@
-# harmonyhub-py
+# AGENTS.md
 
 ---
 
