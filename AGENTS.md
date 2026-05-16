@@ -158,3 +158,4 @@ Full rules in **writing-python-code** skill. Key:
 | `appkit-mantine-reference` | Full API for appkit_mantine components — inputs, layout, overlays, charts, data display, navigation |
 | `testing-reflex-state` | Pytest unit tests for Reflex State — event handlers, computed vars, substates |
 | `multi-stage-dockerfile` | Optimized multi-stage Dockerfiles, layer caching, security, healthchecks |
+| `frontend-design` | Create distinctive, production-grade frontend interfaces |
