@@ -4,7 +4,23 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE.md)
 [![Python](https://img.shields.io/badge/python-3.14%2B-orange)](https://www.python.org)
 
-> Needs to be modified for your project
+> [!important]
+> __Needs to be modified for your project__
+
+## Project Initialization
+
+Before initializing the project, install these required tools:
+
+1. `uv`: [installation instructions](https://docs.astral.sh/uv/getting-started/installation/)
+2. `task`: [installation instructions](https://taskfile.dev/installation/)
+
+After both tools are installed, run:
+
+```sh
+task init
+```
+
+This installs the required Python version, syncs dependencies, and sets up pre-commit hooks.
 
 ## Branching
 
