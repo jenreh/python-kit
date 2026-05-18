@@ -1,6 +1,9 @@
 ---
-name: writing-python-code
-description: Enforces Python 3.14 code style, logging rules, type annotations, design patterns, testing strategy, and clean code principles for the appkit project. Use when writing, reviewing, or refactoring Python code, creating new modules, or adding tests.
+name: python-coding
+description: >
+  Enforces Python 3.14 code style, logging rules, type annotations, design patterns,
+  testing strategy, and clean code principles for the appkit project. Apply automatically whenever
+  writing, reviewing, or refactoring Python code, creating new modules, or adding tests.
 license: MIT
 metadata:
   author: jens-rehpoehler
