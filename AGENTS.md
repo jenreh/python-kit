@@ -1,32 +1,55 @@
 # AGENTS.md
 
+**Stack:** Python 3.14 · Reflex.dev · FastAPI · SQLAlchemy · Alembic · Pydantic · appkit_mantine · appkit_commons
+
 ---
 
-## 1) Golden Rules
+## Rules & Principles
 
-1. **Think → Memory → Tools → Code → Memory.** Use code-reasoning; search Memory and claude-context first; minimal diff; write learnings back.
-2. **Tests are truth.** Failures → fix code first. Change tests only if clearly wrong spec.
-3. **Minimal diff.** Add tests before code. Keep simple.
-4. **Consistency > cleverness.** Follow SOPs and stack idioms.
-5. **Memory multiplies.** Persist decisions, patterns, error signatures, proven fixes.
-6. **Files ≤ 1000 lines.** Exceed → refactor (see §5).
-7. No extensive docs/summaries/comments unless requested.
-8. No `--autogenerate` for Alembic migrations; write manually.
-9. No `cat` to create files; use tools.
-10. Log default: `logger.debug`. Important events: `logger.info`. Issues only: `logger.warning/error`. **No `print`.**
-11. **Caveman skill** applies to all writes here.
+**NEVER** guess — **ALWAYS** read the doc first (use Context7 or a skill)!
+
+1. State assumptions explicitly; push back on over-engineering; ask when unclear.
+2. No features, abstractions, or flexibility beyond what was asked. If 200 lines could be 50, rewrite it.
+3. Only touch what's needed; match existing style; mention (don't delete) unrelated dead code; remove only orphans YOUR changes created.
+4. Goal-driven: "Fix X" → "Write a reproducing test, then make it pass." Plan multi-step tasks:
+
+   ```code
+   1. [Step] → verify: [check]
+   ```
+
+5. **Think → Memory → Tools → Code → Memory.** Search Memory and context first; write learnings back.
+6. **Tests are truth.** Fix code first; change tests only if clearly wrong spec.
+7. **Minimal diff.** Add tests before code. Keep simple.
+8. **Consistency > cleverness.** Follow SOPs and stack idioms.
+9. **Memory multiplies.** Persist decisions, patterns, error signatures, proven fixes.
+10. **Files ≤ 1000 lines.** Exceed → refactor.
+11. No docs/summaries/comments unless requested.
+12. No `--autogenerate` for Alembic migrations; write manually.
+13. No `cat` to create files; use tools.
+14. Log: `logger.debug` default, `.info` important, `.warning/.error` issues. **No `print`.**
 
 > Prefer *local* changes over cross-module refactors.
 
 ---
 
-## 2) Task Bootstrap Pattern
+## 1) Development Workflow
+
+**Task Runner:** `task` (via `Taskfile.dist.yml`), not `make`.
+
+- `task test`
+- `task lint`
+- `task run`
+- `task --help`
+
+### Plan
+
+Create a plan block at task start:
 
 ```markdown
 <!-- plan:start
 goal: <one line clear goal>
 constraints:
-- Python 3.13; Reflex UI; FastAPI; SQLAlchemy 2.0; Alembic; Pydantic; appkit_mantine;
+- Python 3.14; Reflex UI; FastAPI; SQLAlchemy 2.0; Alembic; Pydantic; appkit_mantine; appkit_commons;
 - logging: no f-strings in logger calls
 - files ≤ 1000 lines; apply design patterns where appropriate
 - minimal diff; add/adjust tests first
@@ -41,9 +64,27 @@ steps:
 plan:end -->
 ```
 
+### Implement
+
+1. `task sync` (uv, Python 3.14) then `task test` — baseline failures.
+2. Tests-first. No `print` — use `logging`. No f-strings in logger calls:
+
+   ```python
+   log = logging.getLogger(__name__)
+   log.info("Loaded %d items", count)  # ✅
+   # log.info(f"Loaded {count} items") # ❌
+   ```
+
+### Ship
+
+- `task format && task lint && task test` — coverage ≥ **80%** non-Reflex classes & Reflex states.
+- Conventional Commits (`feat:`, `fix:`, `refactor:`…).
+- PR: description, `Closes #123`, UI screenshots, migration rationale.
+- Dependencies: `uv add <package>`. Write learnings to Memory.
+
 ---
 
-## 3) Tooling Decision Matrix
+## 2) Tooling Decision Matrix
 
 | Situation | Primary | Secondary | Store to Memory |
 | --- | --- | --- | --- |
@@ -57,64 +98,32 @@ Prefer official docs; widen via web search for cross-version issues.
 
 ---
 
-## 4) SOP — Development Workflow
+## 3) Python Code & Testing
 
-**Task Runner:** `task` (via `Taskfile.dist.yml`), not `make`.
+Full rules in **python-coding** skill. Key:
 
-### Prepare
-
-1. Memory first — search prior solutions.
-2. Reasoning plan — Task Bootstrap Pattern.
-3. `task sync` (uv, Python 3.13).
-4. `task test` — snapshot current failures.
-
-### Triage Failures
-
-- Read first failing assertion; map to spec.
-- Tests match spec → fix code. Diverge → document; adjust spec/tests (after approval).
-- Add/adjust unit tests to codify expected behavior.
-
-### Implement (Minimal Diff)
-
-- Tests-first for new behavior. Approved stacks only. Apply design patterns (see §5).
-- **No `print`.** Use `logging` module.
-- **No f-strings in logger calls:**
-
-  ```python
-  import logging
-
-  log = logging.getLogger(__name__)
-  log.info("Loaded items: %d", count)  # ✅
-  # log.info(f"Loaded items: {count}") # ❌
-  ```
-
-### Quality Gates
-
-- `task lint`, `task format`.
-- `task test` — coverage ≥ **80%** non-Reflex classes & Reflex states.
-
-### Commit & PR
-
-- Conventional Commits (`feat:`, `fix:`, `refactor:`…).
-- PR: description, `Closes #123`, UI screenshots, migration rationale.
-
-### Learn → write to **Memory**
-
-### Dependencies
-
-- add dependencies always be using `uv add <library name>`
+- Line length **88**; type annotations on all functions/methods.
 
 ---
 
-## 5) Python Code & Testing
+## 4) Reflex Best Practices
 
-Full rules in **writing-python-code** skill. Key:
+Full rules in **reflex-state-and-architecture** skill. Appkit-specific:
 
-- Python 3.14; uv; line length **88**.
-- No f-strings in logger calls.
-- Files ≤ 1000 lines.
-- Coverage ≥ 80% non-Reflex classes & State classes.
-- Type annotations on all functions/methods.
+- **Substates & Mixins:** State vars on main class; methods split by concern in mixins.
+- **Background Task Chaining:** Yield class method ref: `yield MyState.background_task`.
+- **rx.cond operators:** `&` and `|`, not `and`/`or`.
+- **DB Access:** No `rx.session()` in background/callbacks/utils. Use `appkit_commons.database.session_manager.get_session_manager().session()`.
+
+---
+
+## 5) appkit_mantine Components
+
+Full API in **appkit-mantine-reference** skill. Rules:
+
+- `import appkit_mantine as mn` — Mantine 9.2.0.
+- Never redeclare inherited props — `MantineComponentBase` → `MantineLayoutComponentBase` → `MantineInputComponentBase` provide ~40 common props.
+- `MantineProvider` auto-injected at priority 44 — no manual wrap.
 
 ---
 
@@ -128,15 +137,7 @@ Full rules in **writing-python-code** skill. Key:
 
 ---
 
-## 7) Search SOPs
-
-- **Context7 first** for framework truths; cite in Memory.
-- **DuckDuckGo** for cross-version issues; prefer official docs.
-- Store only final answer: minimal snippet + rationale + version pins + link.
-
----
-
-## 8) Pre‑PR Checklist
+## 7) Pre‑PR Checklist
 
 - [ ] Tests added/updated; all green
 - [ ] Coverage ≥ 80% non-Reflex classes & Reflex states
@@ -149,13 +150,16 @@ Full rules in **writing-python-code** skill. Key:
 
 ---
 
-## 9) Skills
+## 8) Skills
 
 | Skill | Purpose |
 | --- | --- |
-| `writing-python-code` | Python 3.14 style, logging, type annotations, design patterns, testing |
+| `python-coding` | Python 3.14 style, logging, type annotations, design patterns, testing |
+| `python-clean-code` | Clean Code Developer (CCD) architecture and quality principles |
 | `reflex-state-and-architecture` | State design, event handlers, background tasks, form validation, page factory, service registry, repo pattern, DB models, architecture |
 | `appkit-mantine-reference` | Full API for appkit_mantine components — inputs, layout, overlays, charts, data display, navigation |
-| `testing-reflex-state` | Pytest unit tests for Reflex State — event handlers, computed vars, substates |
-| `multi-stage-dockerfile` | Optimized multi-stage Dockerfiles, layer caching, security, healthchecks |
+| `appkit-commons` | appkit-commons usage patterns |
+| `reflex-testing-state` | Pytest unit tests for Reflex State — event handlers, computed vars, substates |
+| `reflex-docs` | Reflex.dev framework documentation |
+| `docker-multi-stage` | Optimized multi-stage Dockerfiles, layer caching, security, healthchecks |
 | `frontend-design` | Create distinctive, production-grade frontend interfaces |
